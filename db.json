@@ -1,0 +1,22 @@
+{
+    "authors": [
+        {
+            "id": 1,
+            "author_name": "Fani Saadah",
+            "author_address": "Brebes",
+            "author_phone": "+6282 8392 7623"
+        },
+        {
+            "id": 2,
+            "author_name": "Fani Fadhilah",
+            "author_address": "Brebes",
+            "author_phone": "+6282 8392 7623"
+        },
+        {
+            "id": 3,
+            "author_name": "Fadhilah Saadah",
+            "author_address": "Brebes",
+            "author_phone": "+6282 8392 7623"
+        }
+    ]
+}
