@@ -21,7 +21,7 @@ export default function Form() {
 
   const params = useParams();
 
-  const isEditing = params.kendaraanId;
+  const isEditing = params.noRegistrasi;
 
   const [kendaraans, setKendaraans] = useState([]);
   const [formInput, setFormInput] = useState({
@@ -37,7 +37,7 @@ export default function Form() {
 
   async function getFormInput() {
     const res = await axios.get(
-      "http://localhost:1111/kendaraan/" + params.kendaraanId
+      "http://localhost:1111/kendaraan/" + params.noRegistrasi
     );
 
     console.log(res.data);
@@ -142,7 +142,6 @@ export default function Form() {
                 readOnly={isDetail}
               />
             </div>
-            <button className="btn btn-primary">Submit</button>
             &nbsp; &nbsp;
             <Link to="/kendaraan">
               <button className="btn btn-secondary">Kembali</button>
@@ -168,11 +167,11 @@ const router = createBrowserRouter([
     element: <KendaraanForm />,
   },
   {
-    path: "/kendaraan/form/:kendaraanId",
+    path: "/kendaraan/form/:noRegistrasi",
     element: <KendaraanForm />,
   },
   {
-    path: "/kendaraan/detail/:kendaraanId",
+    path: "/kendaraan/detail/:noRegistrasi",
     element: <Form />,
   },
 ]);
@@ -191,10 +190,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 //           <Route path="kendaraan" element={<KendaraanList />} />
 //           <Route path="kendaraan/form" element={<KendaraanForm />} />
 //           <Route
-//             path="kendaraan/form/:kendaraanId"
+//             path="kendaraan/form/:noRegistrasi"
 //             element={<KendaraanForm />}
 //           />
-//           <Route path="kendaraan/detail/:kendaraanId" element={<Form />} />
+//           <Route path="kendaraan/detail/:noRegistrasi" element={<Form />} />
 //         </Route>
 //       </Routes>
 //     </BrowserRouter>

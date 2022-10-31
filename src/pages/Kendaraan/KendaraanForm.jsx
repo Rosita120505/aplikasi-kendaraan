@@ -3,11 +3,13 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
+let responses = [];
 export default function KendaraanForm() {
   const navigate = useNavigate();
   const params = useParams();
+  let statusCheckerName = true;
 
-  const isEditing = params.kendaraanId;
+  const isEditing = params.noRegistrasi;
 
   const [kendaraans, setKendaraans] = useState([]);
   const [formInput, setFormInput] = useState({
@@ -34,9 +36,21 @@ export default function KendaraanForm() {
     setKendaraans(res.data);
   }
 
+  function noRegistrasiChecker(paramsNoRegistrasi) {
+    for (let kendaraan of kendaraans) {
+      if (
+        kendaraan.noRegistrasi.toUpperCase() ===
+        paramsNoRegistrasi.toUpperCase()
+      ) {
+        alert("Failed to save data, data was exists");
+        statusCheckerName = false;
+      }
+    }
+  }
+
   async function getFormInput() {
     const res = await axios.get(
-      "http://localhost:1111/kendaraan/" + params.kendaraanId
+      "http://localhost:1111/kendaraan/" + params.noRegistrasi
     );
 
     console.log(res.data);
@@ -48,14 +62,107 @@ export default function KendaraanForm() {
 
     if (isEditing) {
       await axios.put(
-        "http://localhost:1111/kendaraan/update/" + params.kendaraanId,
+        "http://localhost:1111/kendaraan/update/" + params.noRegistrasi,
         formInput
       );
+      navigate("/kendaraan");
     } else {
-      await axios.post("http://localhost:1111/kendaraan/save", formInput);
-    }
+      if (formInput.noRegistrasi.split(" ").length === 1) {
+        const payload = JSON.stringify({
+          ...formInput,
+          noRegistrasi:
+            formInput.noRegistrasi.charAt(0).toUpperCase() +
+            formInput.noRegistrasi.slice(1).toUpperCase(),
+        });
 
-    navigate("/kendaraan");
+        noRegistrasiChecker(
+          formInput.noRegistrasi.charAt(0).toUpperCase() +
+            formInput.noRegistrasi.slice(1).toUpperCase()
+        );
+        if (statusCheckerName === false) {
+          statusCheckerName = true;
+        } else {
+          const targetUrl = "http://localhost:1111/kendaraan/save";
+          const method = "POST";
+          await fetch(targetUrl, {
+            method: method,
+            body: payload,
+            headers: { "Content-Type": "application/json" },
+          })
+            .then((re) => re.json())
+            .then((d) => responses.push(d));
+
+          if (responses[responses.length - 1].status.toString() === "true") {
+            statusCheckerName = true;
+            alert(responses[responses.length - 1].message.toString());
+            navigate("/kendaraan");
+          } else {
+            if (formInput.noRegistrasi !== "") {
+              const messageArr = responses[responses.length - 1].message
+                .toString()
+                .split(" ");
+              messageArr.indexOf("Id") >= 0 && messageArr.indexOf("found") >= 0
+                ? alert(responses[responses.length - 1].message.toString())
+                : alert(responses[responses.length - 1].message.toString());
+            } else {
+              alert("Form must be filled fully");
+            }
+          }
+          statusCheckerName = true;
+        }
+      } else {
+        let strnoRegistrasi = "";
+        for (let inputnoRegistrasi of formInput.noRegistrasi.split(" ")) {
+          strnoRegistrasi +=
+            inputnoRegistrasi.charAt(0).toUpperCase() +
+            inputnoRegistrasi.slice(1).toUpperCase() +
+            " ";
+        }
+        const payload = JSON.stringify({
+          ...formInput,
+          noRegistrasi: strnoRegistrasi.substring(
+            0,
+            strnoRegistrasi.length - 1
+          ),
+        });
+
+        noRegistrasiChecker(
+          strnoRegistrasi.substring(0, strnoRegistrasi.length - 1)
+        );
+
+        if (statusCheckerName === false) {
+          statusCheckerName = true;
+        } else {
+          const targetUrl = "http://localhost:1111/kendaraan/save";
+          const method = "POST";
+          await fetch(targetUrl, {
+            method: method,
+            body: payload,
+            headers: { "Content-Type": "application/json" },
+          })
+            .then((re) => re.json())
+            .then((d) => responses.push(d));
+
+          if (responses[responses.length - 1].status.toString() === "true") {
+            statusCheckerName = true;
+            alert(responses[responses.length - 1].message.toString());
+            navigate("/kendaraan");
+          } else {
+            statusCheckerName = true;
+            if (formInput.noRegistrasi !== "") {
+              const messageArr = responses[responses.length - 1].message
+                .toString()
+                .split(" ");
+              messageArr.indexOf("Id") >= 0 && messageArr.indexOf("found") >= 0
+                ? alert(responses[responses.length - 1].message.toString())
+                : alert(responses[responses.length - 1].message.toString());
+            } else {
+              alert("Form must be filled fully");
+            }
+          }
+        }
+      }
+    }
   }
 
   useEffect(() => {
@@ -65,13 +172,6 @@ export default function KendaraanForm() {
     }
   }, []);
 
-  function hanyaAngka(evt) {
-    var charCode = evt.which ? evt.which : event.keyCode;
-
-    if (charCode > 31 && (charCode < 48 || charCode > 57)) return false;
-
-    return true;
-  }
   return (
     <>
       <div className="card shadow mb-4">
@@ -85,6 +185,7 @@ export default function KendaraanForm() {
               <input
                 className="form-control"
                 type="text"
+                required="required"
                 value={formInput.noRegistrasi}
                 onChange={(event) => handleInput(event, "noRegistrasi")}
               />
@@ -94,6 +195,7 @@ export default function KendaraanForm() {
               <input
                 className="form-control"
                 type="text"
+                required="required"
                 value={formInput.namaPemilik}
                 onChange={(event) => handleInput(event, "namaPemilik")}
               />

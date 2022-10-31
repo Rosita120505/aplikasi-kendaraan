@@ -1,10 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useDebounce } from "use-debounce";
 import axios from "axios";
 
 export default function KendaraanList() {
   const [kendaraans, setKendaraans] = useState([]);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [filteredKendaraan, setFilteredKendaraan] = useState([]);
+  const [searchKeywordDebounced] = useDebounce(searchKeyword, 500);
 
   async function getKendaraanList() {
     try {
@@ -33,12 +37,50 @@ export default function KendaraanList() {
   }
   useEffect(() => {
     getKendaraanList();
-  }, []);
+  }, [searchKeywordDebounced]);
+
+  useEffect(() => {
+    if (searchKeyword.length > 0) {
+      const filterResult = kendaraans.filter((kendaraan) => {
+        const a = kendaraan.noRegistrasi
+          .toLowerCase()
+          .includes(searchKeyword.toLowerCase());
+        const b = kendaraan.namaPemilik
+          .toLowerCase()
+          .includes(searchKeyword.toLocaleLowerCase());
+        return a, b;
+      });
+      setFilteredKendaraan(filterResult);
+    } else {
+      setFilteredKendaraan(kendaraans);
+    }
+  }, [searchKeyword, kendaraans]);
+
   return (
     <>
       <div class="card shadow mb-4">
         <div className="card-header py-3 d-flex flex-row align-items-center justify-content-between">
           <h6 class="m-0 font-weight-bold text-primary">Data Kendaraan</h6>
+
+          <form className="d-none d-sm-inline-block form-inline mr-md-3 ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+            <div className="input-group">
+              <input
+                type="text"
+                className="form-control bg-md-white-auth-end border-0 small"
+                placeholder="cari.."
+                aria-label="Search"
+                aria-describedby="basic-addon2"
+                value={searchKeyword}
+                onChange={(evt) => setSearchKeyword(evt.target.value)}
+              />
+              <div className="input-group-append">
+                <button className="btn btn-primary" type="button">
+                  <i className="fas fa-search fa-sm"></i>
+                </button>
+              </div>
+            </div>
+          </form>
+
           <Link to="/kendaraan/form">
             <button className="btn btn-primary"> Add </button>
           </Link>
@@ -67,7 +109,7 @@ export default function KendaraanList() {
                 </tr>
               </thead>
               <tbody>
-                {kendaraans.map((kendaraan, index) => (
+                {filteredKendaraan.map((kendaraan, index) => (
                   <tr>
                     <td key={kendaraan.kendaraanId} scope="row">
                       {index + 1}
@@ -81,10 +123,10 @@ export default function KendaraanList() {
                     <td>{kendaraan.warna}</td>
                     <td>{kendaraan.bahanBakar}</td>
                     <td>
-                      <Link to={"/kendaraan/detail/" + kendaraan.kendaraanId}>
+                      <Link to={"/kendaraan/detail/" + kendaraan.noRegistrasi}>
                         <button className="btn btn-primary"> Detail </button>
                       </Link>{" "}
-                      <Link to={"/kendaraan/form/" + kendaraan.kendaraanId}>
+                      <Link to={"/kendaraan/form/" + kendaraan.noRegistrasi}>
                         <button className="btn btn-primary"> Edit </button>
                       </Link>{" "}
                       <button
